@@ -1,1 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="pageTitle">Hotel</title>
 
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: Arial, sans-serif;
+    background: #fff8f0;
+    color: #222;
+  }
+
+  .banner {
+    position: relative;
+    height: 70vh;
+    min-height: 420px;
+    overflow: hidden;
+    background: #2b1d10;
+  }
+
+  .brand-logo {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 10px;
+    background: rgba(0,0,0,0.78);
+    border: 1px solid #d6ad52;
+    border-radius: 8px;
+    color: #e8c36b;
+  }
+
+  .brand-logo svg { width: 30px; height: 30px; }
+
+  .brand-name {
+    font-size: 11px;
+    font-weight: bold;
+    white-space: nowrap;
+  }
+
+  .brand-name small {
+    display: block;
+    font-size: 7px;
+    letter-spacing: 1px;
+    margin-top: 3px;
+    color: #fff;
+  }
+
+  .slider {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    overflow: hidden;
+  }
+
+  .slider.rooms { top: 0; background: linear-gradient(135deg, #5a3a1a, #a86a2a); }
+  .slider.food  { top: 50%; background: linear-gradient(135deg, #7a2e12, #d9731f); }
+
+  .slider img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 1s;
+  }
+
+  .slider img.active { opacity: 1; }
+
+  .label {
+    position: absolute;
+    left: 12px;
+    bottom: 10px;
+    z-index: 3;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+  }
+
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+    background: rgba(0,0,0,0.35);
+    padding: 16px;
+  }
+
+  .overlay h1 {
+    font-size: 2.2rem;
+    text-shadow: 0 2px 8px #000;
+  }
+
+  .overlay p {
+    margin-top: 8px;
+    font-size: 1.05rem;
+    text-shadow: 0 2px 6px #000;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    padding: 18px 12px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    text-decoration: none;
+    padding: 14px 24px;
+    border-radius: 30px;
+    font-weight: bold;
+    font-size: 1rem;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+  }
+
+  .btn.call { background: #1faa3f; }
+  .btn.book { background: #ff8c1a; }
+  .btn.custom { background: #c0392b; }
+
+  .btn.book::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -80%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.7), transparent);
+    animation: shine 2.5s infinite;
+  }
+
+  @keyframes shine {
+    to { left: 130%; }
+  }
+
+  .booking {
+    max-width: 480px;
+    margin: 10px auto 30px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  }
+
+  .booking h2 {
+    margin-bottom: 12px;
+    text-align: center;
+  }
+
+  .booking .hint {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 12px;
+  }
+
+  .booking input,
+  .booking select,
+  .booking textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: Arial, sans-serif;
+  }
+
+  .booking textarea {
+    min-height: 90px;
+    resize: vertical;
+  }
+
+  .booking button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    background: #25d366;
+    color: #fff;
+    font-size: 1.05rem;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .booking.customfood button { background: #c0392b; }
+
+  .menu {
+    max-width: 480px;
+    margin: 10px auto 40px;
+    padding: 0 12px;
+  }
+
+  .menu h2 {
+    text-align: center;
+    margin-bottom: 14px;
+  }
+
+  .menu-box {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  }
+
+  .menu-box h3 {
+    color: #ff8c1a;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #ffe0bf;
+    padding-bottom: 6px;
+  }
+
+  .dish {
+    display: flex;
+    justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 1px dashed #e3e3e3;
+    font-size: 1rem;
+  }
+
+  .dish:last-child { border-bottom: none; }
+
+  .dish .price {
+    font-weight: bold;
+    color: #1faa3f;
+  }
+
+  @media (max-width: 400px) {
+    .brand-logo { top: 8px; right: 8px; padding: 5px 7px; }
+    .brand-logo svg { width: 24px; height: 24px; }
+    .brand-name { font-size: 9px; }
+    .brand-name small { font-size: 6px; }
+    .btn { padding: 12px 18px; font-size: 0.95rem; }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="banner">
+
+  <div class="brand-logo">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#fff0b0"/>
+          <stop offset="50%" stop-color="#d6aa45"/>
+          <stop offset="100%" stop-color="#8d6420"/>
+        </linearGradient>
+      </defs>
+      <circle cx="50" cy="50" r="46" fill="none" stroke="url(#gold)" stroke-width="5"/>
+      <text x="50" y="62" text-anchor="middle" font-size="38" font-weight="bold" fill="url(#gold)">RK</text>
+    </svg>
+    <div class="brand-name">
+      R K by Dance
+      <small>PTEL PRIVATE LIMITED</small>
+    </div>
+  </div>
+
+  <div class="slider rooms" id="roomsSlider">
+    <span class="label">Our Rooms</span>
+  </div>
+
+  <div class="slider food" id="foodSlider">
+    <span class="label">Our Food</span>
+  </div>
+
+  <div class="overlay">
+    <h1 id="hotelNameText"></h1>
+    <p id="taglineText"></p>
+  </div>
+
+</div>
+
+<div class="buttons">
+  <a class="btn call" id="callBtn" href="#">Call Now</a>
+  <a class="btn book" href="#booking">Book Your Room</a>
+  <a class="btn custom" href="#customFood">Custom Food</a>
+</div>
+
+<div class="booking" id="booking">
+  <h2>Book on WhatsApp</h2>
+  <input type="text" id="guestName" placeholder="Your name">
+  <input type="date" id="checkIn">
+  <input type="date" id="checkOut">
+  <select id="guests">
+    <option>1 Guest</option>
+    <option>2 Guests</option>
+    <option>3 Guests</option>
+    <option>4 Guests</option>
+    <option>5+ Guests</option>
+  </select>
+  <button type="button" onclick="sendWhatsApp()">Send Booking on WhatsApp</button>
+</div>
+
+<div class="menu" id="menuSection">
+  <h2>Our Menu</h2>
+</div>
+
+<div class="booking customfood" id="customFood">
+  <h2>Apni Pasand Ka Khana</h2>
+  <p class="hint">Menu me nahi mila? Jo khana chahiye wo likho, hum banayenge.</p>
+  <input type="text" id="cfName" placeholder="Your name">
+  <input type="text" id="cfDish" placeholder="Kaunsa khana chahiye? (e.g. Paneer Tikka)">
+  <select id="cfPeople">
+    <option>1 Person</option>
+    <option>2 People</option>
+    <option>3 People</option>
+    <option>4 People</option>
+    <option>5 People</option>
+    <option>6+ People</option>
+  </select>
+  <select id="cfSpice">
+    <option>Medium Spicy</option>
+    <option>Less Spicy</option>
+    <option>Very Spicy</option>
+    <option>No Spice</option>
+  </select>
+  <select id="cfType">
+    <option>Veg</option>
+    <option>Jain</option>
+    <option>Non-Veg</option>
+  </select>
+  <input type="date" id="cfDate">
+  <input type="time" id="cfTime">
+  <textarea id="cfNote" placeholder="Koi khaas baat? (e.g. kam tel, extra gravy, birthday party)"></textarea>
+  <button type="button" onclick="sendCustomFood()">Send Food Request on WhatsApp</button>
+</div>
+
+<script>
+
+/* ============================================================
+   EDIT HERE
+   PHOTOS: GitHub me index.html wale hi folder me upload karo.
+   Naam bilkul chhote akshar (lowercase) me aur .jpg hona chahiye.
+   Kam photo ho to bhi chalega, jo nahi milegi wo apne aap hat jayegi.
+   ============================================================ */
+
+const HOTEL_NAME = "Shakti Hotel and Guest House";
+const TAGLINE = "On the Dwarka - Somnath - Veraval Highway";
+
+const PHONE_NUMBER = "91XXXXXXXXXX";
+const WHATSAPP_NUMBER = "91XXXXXXXXXX";
+
+const ROOM_IMAGES = [
+  "room1.jpg",
+  "room2.jpg",
+  "room3.jpg",
+  "room4.jpg",
+  "room5.jpg",
+  "room6.jpg",
+  "room7.jpg"
+];
+
+const FOOD_IMAGES = [
+  "food1.jpg",
+  "food2.jpg",
+  "food3.jpg",
+  "food4.jpg",
+  "food5.jpg",
+  "food6.jpg",
+  "food7.jpg"
+];
+
+const SLIDE_SECONDS = 3;
+
+const MENU = [
+  {
+    category: "Punjabi",
+    dishes: [
+      { name: "Paneer Butter Masala", price: 220 },
+      { name: "Dal Tadka", price: 140 },
+      { name: "Butter Naan", price: 40 }
+    ]
+  },
+  {
+    category: "Chinese",
+    dishes: [
+      { name: "Veg Hakka Noodles", price: 150 },
+      { name: "Veg Manchurian", price: 160 },
+      { name: "Fried Rice", price: 140 }
+    ]
+  },
+  {
+    category: "Gujarati Thali",
+    dishes: [
+      { name: "Full Thali", price: 250 },
+      { name: "Mini Thali", price: 160 }
+    ]
+  }
+];
+
+/* ============ NEeche kuch change mat karo ============ */
+
+document.getElementById('pageTitle').textContent = HOTEL_NAME;
+document.getElementById('hotelNameText').textContent = HOTEL_NAME;
+document.getElementById('taglineText').textContent = TAGLINE;
+document.getElementById('callBtn').href = 'tel:+' + PHONE_NUMBER;
+
+function startSlider(containerId, images) {
+  var box = document.getElementById(containerId);
+  var imgs = [];
+
+  images.forEach(function (src) {
+    var img = new Image();
+    img.alt = '';
+
+    img.onload = function () {
+      img.setAttribute('data-ok', '1');
+      if (!box.querySelector('img.active')) {
+        img.classList.add('active');
+      }
+    };
+
+    img.onerror = function () {
+      if (img.parentNode) { img.parentNode.removeChild(img); }
+    };
+
+    img.src = src;
+    box.insertBefore(img, box.firstChild);
+    imgs.push(img);
+  });
+
+  setInterval(function () {
+    var ok = imgs.filter(function (i) {
+      return i.getAttribute('data-ok') === '1' && i.parentNode;
+    });
+    if (ok.length < 2) { return; }
+
+    var cur = -1;
+    ok.forEach(function (i, idx) {
+      if (i.classList.contains('active')) { cur = idx; }
+      i.classList.remove('active');
+    });
+
+    ok[(cur + 1) % ok.length].classList.add('active');
+  }, SLIDE_SECONDS * 1000);
+}
+
+startSlider('roomsSlider', ROOM_IMAGES);
+startSlider('foodSlider', FOOD_IMAGES);
+
+function buildMenu() {
+  var section = document.getElementById('menuSection');
+
+  MENU.forEach(function (group) {
+    var box = document.createElement('div');
+    box.className = 'menu-box';
+
+    var title = document.createElement('h3');
+    title.textContent = group.category;
+    box.appendChild(title);
+
+    group.dishes.forEach(function (d) {
+      var row = document.createElement('div');
+      row.className = 'dish';
+
+      var n = document.createElement('span');
+      n.textContent = d.name;
+
+      var p = document.createElement('span');
+      p.className = 'price';
+      p.textContent = '\u20B9' + d.price;
+
+      row.appendChild(n);
+      row.appendChild(p);
+      box.appendChild(row);
+    });
+
+    section.appendChild(box);
+  });
+}
+
+buildMenu();
+
+function sendWhatsApp() {
+  var name = document.getElementById('guestName').value;
+  var inDate = document.getElementById('checkIn').value;
+  var outDate = document.getElementById('checkOut').value;
+  var guests = document.getElementById('guests').value;
+
+  var msg =
+    'Hello, I want to book a room at ' + HOTEL_NAME +
+    '.\nName: ' + name +
+    '\nCheck-in: ' + inDate +
+    '\nCheck-out: ' + outDate +
+    '\nGuests: ' + guests;
+
+  window.open(
+    'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg),
+    '_blank'
+  );
+}
+
+function sendCustomFood() {
+  var name = document.getElementById('cfName').value;
+  var dish = document.getElementById('cfDish').value;
+  var people = document.getElementById('cfPeople').value;
+  var spice = document.getElementById('cfSpice').value;
+  var type = document.getElementById('cfType').value;
+  var date = document.getElementById('cfDate').value;
+  var time = document.getElementById('cfTime').value;
+  var note = document.getElementById('cfNote').value;
+
+  if (!dish.trim()) {
+    alert('Pehle likho ki kaunsa khana chahiye.');
+    return;
+  }
+
+  var msg =
+    'Hello, I want a custom food order at ' + HOTEL_NAME +
+    '.\nName: ' + name +
+    '\nFood: ' + dish +
+    '\nPeople: ' + people +
+    '\nSpice: ' + spice +
+    '\nType: ' + type +
+    '\nDate: ' + date +
+    '\nTime: ' + time +
+    '\nNote: ' + note;
+
+  window.open(
+    'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg),
+    '_blank'
+  );
+}
+
+</script>
+
+</body>
+</html>
